@@ -1,0 +1,66 @@
+name: prod test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    env:
+      working-directory: ./cicd_pipeline_test
+      CI: false
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # .env에 있던 환경변수들을 등록해주는 단계
+      - name: .env setting
+        run: |
+          # echo "REACT_APP_SERVER_URL=${{ secrets.REACT_APP_SERVER_URL }}" >> ./s-cicd_pipeline_test/.env
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./cicd_pipeline_test/node_modules
+          key: npm-packages-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn
+        working-directory: ${{ env.working-directory }}
+      - run: npm run build --if-present
+        working-directory: ${{ env.working-directory }}
+      # - run: npm test
+      #   working-directory: ${{ env.working-directory }}
+      - run: echo Your Build is Done!
+      - run: ls -al
+
+      - name: SCP ACTION
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST_DNS }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: ./cicd_pipeline_test/build
+          target: ~/cicd_pipeline_test-build/cicd_pipeline_test-test/
+
+      # - name: SSH ACTION
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST_DNS }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       sudo docker cp ~/hprobot-build/srms-test/cicd_pipeline_test/build 3c24a40e8466:../home/HMS/
+      #       ls -al ~/hprobot-build/srms-test/build

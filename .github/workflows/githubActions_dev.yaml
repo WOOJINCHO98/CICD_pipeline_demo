@@ -14,15 +14,15 @@ jobs:
     #      matrix:
     #        node-version: [18.x, 20.x]
     steps:
-      #      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       #      - name: Use Node.js ${{ matrix.node-version }}
       #        uses: actions/setup-node@v3
       #        with:
       #          node-version: ${{ matrix.node-version }}
       - name: Docker Hub build & push
         run: |
-          cd cicd_pipeline_test
           ls -al
+          cd cicd_pipeline_test
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} -f Dockerfile.dev .
           docker images

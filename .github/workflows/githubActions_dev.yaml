@@ -21,8 +21,8 @@ jobs:
       #          node-version: ${{ matrix.node-version }}
       - name: Docker Hub build & push
         run: |
-          cd cicd_pipeline_test
           ls -al
+          cd cicd_pipeline_test
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} -f Dockerfile.dev .
           docker images

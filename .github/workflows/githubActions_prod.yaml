@@ -37,8 +37,8 @@ jobs:
           script: |
             cd /home/ubuntu/CICD_pipeline_demo/cicd_pipeline_test/
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker rm -f test-app-prod
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
+            sudo docker rm -f test-app-prod
             sudo docker run -d -p 3002:80 --name test-app-prod ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
             # sudo docker-compose up -d
             sudo docker image prune -f

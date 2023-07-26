@@ -3,9 +3,6 @@ name: dev test
 on:
   push:
     branches: [develop]
-  pull_request:
-    branches: [develop]
-
 jobs:
   build:
     env:
@@ -22,6 +19,14 @@ jobs:
       #        uses: actions/setup-node@v3
       #        with:
       #          node-version: ${{ matrix.node-version }}
+      - name: Docker Hub build & push
+        run: |
+          cd cicd_pipeline_test
+          ls -al
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} -f Dockerfile.dev .
+          docker images
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
 
       - name: SSH ACTION!
         uses: appleboy/ssh-action@master
@@ -30,7 +35,17 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/CICD_pipeline_demo/
-            ls -al
-            sudo git pull origin develop
-            #ls -al ~/hprobot-build/srms-test/build
+            # cd ~/CICD_pipeline_demo/
+            # ls -al
+            # sudo git pull origin develop
+            # cd cicd_pipeline_test/
+
+            # #ls -al ~/hprobot-build/srms-test/build
+
+            cd /home/ubuntu/CICDTEST/
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            sudo docker rm -f ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+            sudo docker run -d -p 3003:5173 --name test-app-dev ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+            # sudo docker-compose up -d
+            sudo docker image prune -f

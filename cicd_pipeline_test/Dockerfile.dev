@@ -13,6 +13,6 @@ COPY . .
 # Development stage to enable live-reloading
 FROM base AS development
 
-EXPOSE 8080
+# EXPOSE 8080
 
 CMD ["npm", "run", "dev"]
